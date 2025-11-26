@@ -1,0 +1,519 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Marketplace Tec</title>
+
+<!-- Simple styling, responsive -->
+<style>
+  :root{
+    --accent:#0ea5a4;
+    --muted:#6b7280;
+    --card:#ffffff;
+    --bg:#f3f4f6;
+  }
+  body{font-family:Inter,ui-sans-serif,system-ui,-apple-system; margin:0; background:var(--bg); color:#0f172a;}
+  header{background:linear-gradient(90deg,#06b6d4,#7c3aed); color:white; padding:18px 28px; display:flex; justify-content:space-between; align-items:center;}
+  header h1{margin:0; font-size:20px;}
+  .container{max-width:1200px; margin:24px auto; padding:0 18px; display:grid; grid-template-columns:1fr 360px; gap:18px;}
+  .catalog{display:grid; grid-template-columns:repeat(auto-fill,minmax(240px,1fr)); gap:14px;}
+  .product{background:var(--card); border-radius:12px; padding:12px; box-shadow:0 6px 18px rgba(2,6,23,0.06); display:flex; flex-direction:column; justify-content:space-between;}
+  .product img{width:100%; height:160px; object-fit:cover; border-radius:8px;}
+  .product h3{font-size:16px; margin:10px 0 6px;}
+  .product p{font-size:13px; color:var(--muted); margin:0 0 10px;}
+  .product .meta{display:flex; justify-content:space-between; align-items:center;}
+  .btn{background:var(--accent); color:white; border:none; padding:8px 10px; border-radius:8px; cursor:pointer;}
+  .btn.ghost{background:transparent; border:1px solid #e6e6e6; color:var(--muted);}
+  .sidebar{position:sticky; top:20px; background:var(--card); padding:14px; border-radius:12px; box-shadow:0 6px 18px rgba(2,6,23,0.06); height:fit-content;}
+  .cart-item{display:flex; gap:10px; align-items:center; margin-bottom:10px;}
+  .cart-item img{width:52px; height:52px; object-fit:cover; border-radius:6px;}
+  .qty{display:inline-flex; align-items:center; gap:6px;}
+  .small{font-size:13px; color:var(--muted);}
+  .flex{display:flex; gap:8px;}
+  .hidden{display:none;}
+  footer{text-align:center;padding:18px;color:var(--muted);}
+
+  /* modal */
+  .modal-bg{position:fixed; inset:0; background:rgba(2,6,23,0.5); display:flex; align-items:center; justify-content:center; z-index:60;}
+  .modal{background:white; border-radius:12px; width:min(920px,95%); max-height:90vh; overflow:auto; padding:16px;}
+  .grid-2{display:grid; grid-template-columns:1fr 1fr; gap:12px;}
+  .form-field{margin-bottom:8px;}
+  input[type="text"], input[type="number"], textarea{width:100%; padding:8px; border-radius:8px; border:1px solid #e6e6e6;}
+  label{font-size:13px; color:var(--muted); display:block; margin-bottom:6px;}
+  .product-detail-img{width:100%; height:320px; object-fit:cover; border-radius:8px;}
+
+  @media (max-width:980px){ .container{grid-template-columns:1fr; } .sidebar{position:static;} .grid-2{grid-template-columns:1fr;} }
+</style>
+</head>
+<body>
+
+<header>
+  <div style="display:flex;align-items:center;gap:14px">
+    <div style="width:40px;height:40px;background:white;border-radius:8px;color:#0ea5a4;display:flex;align-items:center;justify-content:center;font-weight:700">MP</div>
+    <h1>Marketplace Tec</h1>
+  </div>
+
+  <div style="display:flex;gap:12px;align-items:center">
+    <button id="btnAddProduct" class="btn" title="Vender producto">Vender</button>
+    <button id="btnLogin" class="btn btn-ghost">Entrar / Registro</button>
+    <button id="logoutBtn" style="
+        background:#c62828;
+        color:white;
+        padding:8px 15px;
+        border:none;
+        border-radius:8px;
+        cursor:pointer;
+    ">Cerrar sesión</button>
+
+  </div>
+</header>
+
+
+<div class="container">
+  <!-- left: catalog -->
+  <section>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+      <div>
+        <input id="search" placeholder="Buscar productos..." style="padding:8px;border-radius:8px;border:1px solid #e6e6e6;width:360px"/>
+        <button id="btnSearch" class="btn" style="margin-left:8px">Buscar</button>
+      </div>
+      <div class="small">Haz clic en un producto para ver detalles</div>
+    </div>
+
+    <div id="catalog" class="catalog"></div>
+  </section>
+
+  <!-- right: cart -->
+  <aside class="sidebar">
+    <h3>Carrito</h3>
+    <div id="cartList"></div>
+    <div style="border-top:1px dashed #eee;margin-top:10px;padding-top:10px">
+      <div style="display:flex;justify-content:space-between"><div class="small">Subtotal</div><div id="subtotal">$0.00</div></div>
+      <div style="display:flex;justify-content:space-between;margin-top:6px"><div class="small">Impuestos</div><div id="tax">$0.00</div></div>
+      <div style="display:flex;justify-content:space-between;margin-top:10px;font-weight:700"><div>Total</div><div id="total">$0.00</div></div>
+      <div style="margin-top:12px">
+        <button id="btnCheckout" class="btn" style="width:100%">Pagar (simulado)</button>
+      </div>
+      <div style="margin-top:8px">
+        <button id="btnHide" class="btn btn-ghost" style="width:100%">Ocultar seleccionado</button>
+      </div>
+      <div style="margin-top:8px">
+        <button id="btnClearHidden" class="btn btn-ghost" style="width:100%">Ver / Recuperar ocultos</button>
+      </div>
+    </div>
+  </aside>
+</div>
+
+<footer>Demo — No proceses pagos reales. Para mantener en línea, despliega a la nube (instrucciones abajo).</footer>
+
+<!-- MODALS -->
+<div id="modalRoot"></div>
+
+<!-- SCRIPT: frontend logic -->
+<script>
+/* ====== Configuration ====== */
+const API = '/api';
+let PRODUCTS = [];           // loaded from /api/products
+let CART = [];               // { productId, quantity, hidden: false }
+let HIDDEN = [];             // stored locally or session
+let currentUser = null;
+
+/* ====== Helper utilities ====== */
+function $(sel){ return document.querySelector(sel); }
+function money(v){ return '$' + Number(v).toFixed(2); }
+
+/* ====== Load initial data ====== */
+async function fetchProducts(){
+  try{
+    const res = await fetch(API + '/products', { credentials: 'include' });
+    PRODUCTS = await res.json();
+    renderCatalog(PRODUCTS);
+  }catch(e){ console.error('fetchProducts', e); }
+}
+function productById(id){ return PRODUCTS.find(p => String(p.id) === String(id)); }
+
+/* ====== Render catalog ====== */
+function renderCatalog(list){
+  const el = $('#catalog'); el.innerHTML = '';
+  list.forEach(p=>{
+    const card = document.createElement('div'); card.className='product';
+    card.innerHTML = `
+      <img src="${p.image || '/static/default-product.jpg'}" alt="${p.name}" loading="lazy"/>
+      <h3>${p.name}</h3>
+      <p class="small">${p.description || ''}</p>
+      <div class="meta"><strong>${money(p.price)}</strong><div><button class="btn" data-add="${p.id}">Agregar</button></div></div>
+    `;
+    card.onclick = (e)=>{
+      // if click on add button, don't open detail
+      if(e.target && e.target.dataset && e.target.dataset.add) return;
+      showProductDetail(p.id);
+    };
+    el.appendChild(card);
+    // add button handler
+    card.querySelector('[data-add]')?.addEventListener('click', (ev)=>{
+      ev.stopPropagation();
+      addToCart(p.id, 1);
+    });
+  });
+}
+
+/* ====== Product detail modal ====== */
+function showProductDetail(id){
+  const p = productById(id);
+  if(!p) return;
+  const modal = document.createElement('div'); modal.className='modal-bg';
+  modal.innerHTML = `
+    <div class="modal">
+      <div class="grid-2">
+        <div>
+          <img class="product-detail-img" src="${p.image || '/static/default-product.jpg'}" alt="${p.name}">
+        </div>
+        <div>
+          <h2>${p.name}</h2>
+          <div class="small" style="margin-bottom:10px">${p.description || ''}</div>
+          <div style="font-weight:700; font-size:18px">${money(p.price)}</div>
+          <div style="margin-top:10px" class="small">Stock: ${p.stock}</div>
+          <div style="margin-top:14px" class="flex">
+            <input id="pdQty" type="number" value="1" min="1" style="width:96px;padding:8px;border-radius:8px;border:1px solid #eee"/>
+            <button id="pdAdd" class="btn">Agregar</button>
+            <button id="pdBuy" class="btn btn-ghost">Comprar ahora</button>
+          </div>
+          <div style="margin-top:10px;"><button id="pdClose" class="btn btn-ghost">Cerrar</button></div>
+        </div>
+      </div>
+    </div>
+  `;
+  document.getElementById('modalRoot').appendChild(modal);
+
+  modal.querySelector('#pdClose').onclick = ()=> modal.remove();
+  modal.querySelector('#pdAdd').onclick = ()=>{
+    const q = parseInt(modal.querySelector('#pdQty').value || '1');
+    addToCart(p.id, q);
+    modal.remove();
+  };
+  modal.querySelector('#pdBuy').onclick = async ()=>{
+    const q = parseInt(modal.querySelector('#pdQty').value || '1');
+    addToCart(p.id, q);
+    modal.remove();
+    await openCheckout();
+  };
+}
+
+/* ====== Cart render & actions ====== */
+function renderCart(){
+  const el = document.getElementById('cartList'); el.innerHTML = '';
+  if(!CART.length){ el.innerHTML = '<div class="small">Tu carrito está vacío</div>'; updateTotals(); return; }
+  CART.forEach((it, i)=>{
+    if(it.hidden) return; // hide on UI
+    const p = productById(it.productId);
+    const div = document.createElement('div'); div.className='cart-item';
+    div.innerHTML = `
+      <img src="${p.image || '/static/default-product.jpg'}"><div style="flex:1">
+      <div style="display:flex;justify-content:space-between"><strong>${p.name}</strong><span class="small">${money(p.price)}</span></div>
+      <div class="small">Cantidad:
+        <span class="qty">
+          <button data-dec="${i}">-</button>
+          <span id="q${i}">${it.quantity}</span>
+          <button data-inc="${i}">+</button>
+        </span>
+      </div>
+      <div style="margin-top:6px" class="flex">
+        <button class="btn btn-ghost" data-remove="${i}">Eliminar</button>
+        <button class="btn btn-ghost" data-hide="${i}">Ocultar</button>
+      </div>
+      </div>
+    `;
+    el.appendChild(div);
+  });
+
+  // delegates
+  el.querySelectorAll('[data-inc]').forEach(b=>b.onclick=()=>{ changeQty(b.dataset.inc, +1); });
+  el.querySelectorAll('[data-dec]').forEach(b=>b.onclick=()=>{ changeQty(b.dataset.dec, -1); });
+  el.querySelectorAll('[data-remove]').forEach(b=>b.onclick=()=>{ removeFromCart(b.dataset.remove); });
+  el.querySelectorAll('[data-hide]').forEach(b=>b.onclick=()=>{ hideFromCart(b.dataset.hide); });
+
+  updateTotals();
+}
+
+function changeQty(index, delta){
+  index = Number(index);
+  CART[index].quantity = Math.max(1, CART[index].quantity + delta);
+  renderCart();
+}
+
+function removeFromCart(index){
+  index = Number(index);
+  CART.splice(index,1);
+  renderCart();
+}
+
+function hideFromCart(index){
+  index = Number(index);
+  CART[index].hidden = true;
+  HIDDEN.push(CART[index]);
+  renderCart();
+}
+function showHidden(){
+  // show panel to recover hidden
+  const modal = document.createElement('div'); modal.className='modal-bg';
+  modal.innerHTML = `<div class="modal"><h3>Ocultos</h3><div id="hiddenList"></div><div style="margin-top:12px"><button id="closeH" class="btn btn-ghost">Cerrar</button></div></div>`;
+  document.getElementById('modalRoot').appendChild(modal);
+  const list = modal.querySelector('#hiddenList');
+  list.innerHTML = HIDDEN.map((h, idx)=>`<div style="border-bottom:1px solid #eee;padding:8px"><div>${productById(h.productId).name}</div><div style="margin-top:6px"><button data-rec="${idx}" class="btn">Recuperar</button></div></div>`).join('');
+  modal.querySelectorAll('[data-rec]').forEach(b=>b.onclick=()=>{
+    const idx = Number(b.dataset.rec);
+    const item = HIDDEN.splice(idx,1)[0];
+    item.hidden=false;
+    CART.push(item);
+    modal.remove();
+    renderCart();
+  });
+  modal.querySelector('#closeH').onclick = ()=> modal.remove();
+}
+
+/* ====== Totals ====== */
+function updateTotals(){
+  let subtotal = 0;
+  CART.forEach(it=>{ if(!it.hidden){ const p = productById(it.productId); subtotal += (p?.price || 0) * it.quantity; }});
+  const tax = subtotal * 0.12;
+  const total = subtotal + tax;
+  $('#subtotal').textContent = money(subtotal);
+  $('#tax').textContent = money(tax);
+  $('#total').textContent = money(total);
+}   
+
+/* ====== Add to cart (backend session optional) ====== */
+async function addToCart(productId, qty){
+  // local cart
+  const existing = CART.find(c=>String(c.productId) === String(productId) && !c.hidden);
+  if(existing) existing.quantity += qty;
+  else CART.push({productId: String(productId), quantity: qty, hidden:false});
+  renderCart();
+
+  // Mirror to backend session cart (so order endpoint can use session)
+  try{
+    await fetch(API + '/cart', { method:'POST', headers:{'Content-Type':'application/json'}, credentials:'include', body: JSON.stringify({productId: String(productId), quantity: qty})});
+  }catch(e){ console.warn('sync cart', e); }
+}
+
+/* ====== Checkout & payment (simulated) ====== */
+async function openCheckout(){
+  // open payment modal
+  const modal = document.createElement('div'); modal.className='modal-bg';
+  modal.innerHTML = `
+    <div class="modal">
+      <h3>Pagar</h3>
+      <div class="grid-2">
+        <div>
+          <label>Nombre en tarjeta</label><input id="cardName" type="text">
+          <label>Numero de tarjeta</label><input id="cardNum" type="text" placeholder="4111 1111 1111 1111">
+          <label>Expiración (MM/AA)</label><input id="cardExp" type="text" placeholder="12/25">
+          <label>CVC</label><input id="cardCvc" type="text" placeholder="123">
+        </div>
+        <div>
+          <label>Dirección de envío</label><textarea id="shipAddr" rows="6" style="width:100%;"></textarea>
+        </div>
+      </div>
+      <div style="margin-top:12px;display:flex;gap:8px;justify-content:flex-end">
+        <button id="payCancel" class="btn btn-ghost">Cancelar</button>
+        <button id="payNow" class="btn">Pagar (simulado)</button>
+      </div>
+    </div>
+  `;
+  document.getElementById('modalRoot').appendChild(modal);
+
+  modal.querySelector('#payCancel').onclick = ()=> modal.remove();
+  modal.querySelector('#payNow').onclick = async ()=>{
+    // simple validation
+    const ship = modal.querySelector('#shipAddr').value.trim();
+    if(!ship) return alert('Ingresa dirección');
+    // build order items from local CART (non-hidden)
+    const items = CART.filter(i=>!i.hidden).map(i=> ({ productId: i.productId, quantity: i.quantity }));
+    const payment = { cardMasked: '**** **** **** ' + (modal.querySelector('#cardNum').value.slice(-4) || '1234') };
+    const payload = { items, shippingAddress: { address: ship }, payment };
+    // call create order
+    const res = await fetch(API + '/order', { method:'POST', headers:{'Content-Type':'application/json'}, credentials:'include', body: JSON.stringify(payload) });
+    const data = await res.json();
+    if(data.status === 'ok'){
+      modal.remove();
+      // clear local cart and backend cart
+      CART = [];
+      await fetch(API + '/cart', { method:'DELETE', credentials:'include' });
+      renderCart();
+      showTicket(data.order_id, payload.shippingAddress, payload.payment, data.total || 0, data.items || items);
+    } else {
+      alert('Error al crear orden: ' + (data.message || JSON.stringify(data)));
+    }
+  };
+}
+
+/* ====== Ticket view & download ====== */
+function showTicket(orderId, shipping, payment, total, items){
+  const modal = document.createElement('div'); modal.className='modal-bg';
+  modal.innerHTML = `
+    <div class="modal">
+      <h3>Ticket</h3>
+      <div><strong>Orden:</strong> #${orderId}</div>
+      <div><strong>Total:</strong> ${money(total)}</div>
+      <div><strong>Envio:</strong> ${shipping.address || ''}</div>
+      <div style="margin-top:8px">
+        <h4>Items</h4>
+        ${items.map(it=>`<div>${productById(it.productId)?.name || it.productId} x ${it.quantity}</div>`).join('')}
+      </div>
+      <div style="margin-top:12px;display:flex;gap:8px;justify-content:flex-end">
+        <a class="btn" href="${API}/order/${orderId}/ticket" target="_blank">Descargar PDF</a>
+        <button id="closeTicket" class="btn btn-ghost">Cerrar</button>
+      </div>
+    </div>
+  `;
+  document.getElementById('modalRoot').appendChild(modal);
+  modal.querySelector('#closeTicket').onclick = ()=> modal.remove();
+}
+
+/* ====== Seller: add product (upload image + create) ====== */
+function showAddProduct(){
+  const modal = document.createElement('div'); modal.className='modal-bg';
+  modal.innerHTML = `
+    <div class="modal">
+      <h3>Vender producto</h3>
+      <div class="form-field"><label>Nombre</label><input id="npName" type="text"></div>
+      <div class="form-field"><label>Descripción</label><textarea id="npDesc"></textarea></div>
+      <div class="form-field"><label>Precio</label><input id="npPrice" type="number" step="0.01"></div>
+      <div class="form-field"><label>Stock</label><input id="npStock" type="number"></div>
+      <div class="form-field"><label>Imagen</label><input id="npImage" type="file" accept="image/*"></div>
+      <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:8px">
+        <button id="npCancel" class="btn btn-ghost">Cancelar</button>
+        <button id="npCreate" class="btn">Publicar</button>
+      </div>
+    </div>
+  `;
+  document.getElementById('modalRoot').appendChild(modal);
+
+  modal.querySelector('#npCancel').onclick = ()=> modal.remove();
+  modal.querySelector('#npCreate').onclick = async ()=>{
+    const name = modal.querySelector('#npName').value.trim();
+    const desc = modal.querySelector('#npDesc').value.trim();
+    const price = parseFloat(modal.querySelector('#npPrice').value) || 0;
+    const stock = parseInt(modal.querySelector('#npStock').value) || 0;
+    const file = modal.querySelector('#npImage').files[0];
+
+    if(!name || !price) return alert('Nombre y precio requeridos');
+
+    // If file selected, upload -> returns image URL
+    let imageUrl = null;
+    if(file){
+      const fd = new FormData();
+      fd.append('image', file);
+      const up = await fetch(API + '/upload-image', { method:'POST', credentials:'include', body: fd });
+      const upData = await up.json();
+      if(upData.ok) imageUrl = upData.url;
+      else { alert('Error al subir imagen'); return; }
+    }
+
+    // create product server-side
+    const create = await fetch(API + '/add-product', { method:'POST', headers:{'Content-Type':'application/json'}, credentials:'include', body: JSON.stringify({ name, description: desc, price, stock, image: imageUrl }) });
+    const cdata = await create.json();
+    if(cdata.status === 'ok'){
+      modal.remove();
+      await fetchProducts();
+      alert('Producto publicado');
+    } else {
+      alert('Error al crear producto: ' + (cdata.message || JSON.stringify(cdata)));
+    }
+  };
+}
+
+/* ====== Init UI wiring ====== */
+document.getElementById('btnAddProduct').onclick = showAddProduct;
+document.getElementById('btnLogin').onclick = () => {
+  // try to get session info; if not open modal login/register
+  openLoginModal();
+};
+document.getElementById('btnSearch').onclick = ()=> fetchProducts();
+document.getElementById('btnCheckout').onclick = openCheckout;
+document.getElementById('btnHide').onclick = ()=> {
+  // hide selected items (simple: hide all items with checkbox? We'll hide all for demo)
+  CART.forEach(c=> c.hidden = true);
+  HIDDEN.push(...CART.filter(c=>c.hidden));
+  CART = CART.filter(c=>!c.hidden);
+  renderCart();
+};
+document.getElementById('btnClearHidden').onclick = showHidden;
+
+/* ====== Login / register modal (alternative to header button) ====== */
+function openLoginModal(){
+  const modal = document.createElement('div'); modal.className='modal-bg';
+  modal.innerHTML = `
+    <div class="modal">
+      <h3>Entrar / Registrar</h3>
+      <div style="display:flex;gap:8px;">
+        <div style="flex:1">
+          <label>Usuario</label><input id="liUser" type="text">
+          <label>Contraseña</label><input id="liPass" type="password">
+          <div style="display:flex;gap:8px;margin-top:8px">
+            <button id="liLogin" class="btn">Entrar</button>
+            <button id="liShowReg" class="btn btn-ghost">Registrar</button>
+          </div>
+        </div>
+        <div style="width:260px;padding-left:12px;border-left:1px dashed #eee">
+          <div class="small">Si no tienes cuenta, regístrate usando el botón registrar. Después inicia sesión para comprar.</div>
+        </div>
+      </div>
+    </div>
+  `;
+  document.getElementById('modalRoot').appendChild(modal);
+
+  modal.querySelector('#liLogin').onclick = async ()=>{
+    const username = modal.querySelector('#liUser').value;
+    const password = modal.querySelector('#liPass').value;
+    const res = await fetch(API + '/login', { method:'POST', headers:{'Content-Type':'application/json'}, credentials:'include', body: JSON.stringify({ username, password })});
+    const data = await res.json();
+    if(data.status === 'ok'){ currentUser = data.user; modal.remove(); showUserLogged(); }
+    else alert('Credenciales incorrectas');
+  };
+  modal.querySelector('#liShowReg').onclick = ()=> {
+    modal.remove();
+    openRegisterModal();
+  };
+}
+function openRegisterModal(){
+  const modal = document.createElement('div'); modal.className='modal-bg';
+  modal.innerHTML = `
+    <div class="modal">
+      <h3>Crear cuenta</h3>
+      <label>Usuario</label><input id="rgUser" type="text">
+      <label>Contraseña</label><input id="rgPass" type="password">
+      <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:8px">
+        <button id="rgCancel" class="btn btn-ghost">Cancelar</button>
+        <button id="rgCreate" class="btn">Crear cuenta</button>
+      </div>
+    </div>
+  `;
+  document.getElementById('modalRoot').appendChild(modal);
+  modal.querySelector('#rgCancel').onclick = ()=> modal.remove();
+  modal.querySelector('#rgCreate').onclick = async ()=>{
+    const username = modal.querySelector('#rgUser').value;
+    const password = modal.querySelector('#rgPass').value;
+    const res = await fetch(API + '/register', { method:'POST', headers:{'Content-Type':'application/json'}, credentials:'include', body: JSON.stringify({ username, password })});
+    const data = await res.json();
+    if(data.status==='ok'){ alert('Registrado. Por favor, inicia sesión.'); modal.remove(); openLoginModal(); }
+    else alert('Error: ' + (data.message || JSON.stringify(data)));
+  };
+}
+
+/* ====== Show user after login (basic) ====== */
+function showUserLogged(){
+  document.getElementById('btnLogin').textContent = (currentUser?.username || 'Cuenta');
+  // Could show more features...
+}
+
+/* ====== start ====== */
+(async ()=>{
+  await fetchProducts();
+  renderCart();
+})();
+</script>
+
+</body>
+</html>

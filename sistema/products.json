@@ -1,0 +1,73 @@
+[
+    {
+        "id": 1,
+        "name": "Laptop Lenovo",
+        "description": "Laptop empresarial de buen rendimiento",
+        "price": 12500,
+        "stock": 15
+    },
+    {
+        "id": 2,
+        "name": "Mouse Gamer Logitech",
+        "description": "Mouse gamer de alta precisión",
+        "price": 550,
+        "stock": 40
+    },
+    {
+        "id": 3,
+        "name": "Teclado Mecánico Redragon",
+        "description": "Teclado mecánico RGB ideal para gaming",
+        "price": 850,
+        "stock": 30
+    },
+    {
+        "id": 4,
+        "name": "Monitor Samsung 24\"",
+        "description": "Monitor Full HD de 24 pulgadas",
+        "price": 3200,
+        "stock": 12
+    },
+    {
+        "id": 5,
+        "name": "USB 64GB Kingston",
+        "description": "Memoria USB 3.0 de 64GB",
+        "price": 180,
+        "stock": 100
+    },
+    {
+        "id": 6,
+        "name": "Laptop Gamer",
+        "description": "Laptop con RTX 3060, 16GB RAM y SSD 1TB",
+        "price": 24500,
+        "stock": 10
+    },
+    {
+        "id": 7,
+        "name": "Mouse Inalámbrico",
+        "description": "Mouse inalámbrico ergonómico",
+        "price": 350,
+        "stock": 50
+    },
+    {
+        "id": 8,
+        "name": "Teclado Mecánico RGB",
+        "description": "Teclado mecánico con switches rojos",
+        "price": 950,
+        "stock": 25
+    },
+    {
+        "id": 9,
+        "name": "Monitor 27'' 144Hz",
+        "description": "Monitor gaming Full HD 144Hz",
+        "price": 5200,
+        "stock": 15
+    },
+    {
+        "id": 10,
+        "name": "Audífonos Bluetooth",
+        "description": "Audífonos inalámbricos con cancelación de ruido",
+        "price": 780,
+        "stock": 40
+    }
+]
+
